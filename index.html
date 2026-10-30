@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>鲲 · 逍遥游</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{
+  "imports": {
+    "pixi.js": "./node_modules/pixi.js/dist/pixi.mjs"
+  }
+}
+</script>
+</head>
+<body>
+<div id="game-wrap">
+  <canvas id="game" width="960" height="600"></canvas>
+
+  <!-- ================= HUD ================= -->
+  <div id="hud" class="hidden">
+    <div class="hud-top">
+      <div class="hud-left">
+        <div class="hud-stat">
+          <span class="hud-label">得分</span>
+          <span class="hud-value" id="hud-score">0</span>
+        </div>
+        <div class="hud-chip" id="hud-actlevel">江河 · 1-1</div>
+        <div class="hud-chip hud-form" id="hud-form">鱼苗鲲</div>
+        <div class="hud-chip" id="hud-level">体型 Lv.0 / 3</div>
+      </div>
+
+      <div class="hud-center">
+        <div id="boss-bar" class="hidden">
+          <div id="boss-name">河伯 · 黄河水神</div>
+          <div id="boss-track"><div id="boss-fill"></div></div>
+          <div id="qi-dots" class="hidden"><span></span><span></span><span></span></div>
+        </div>
+        <div id="growth-bar">
+          <div id="growth-fill"></div>
+          <div id="growth-shine"></div>
+        </div>
+        <div id="growth-label">进化度</div>
+      </div>
+
+      <div class="hud-right">
+        <div id="hud-lives"></div>
+        <div id="item-fx"></div>
+      </div>
+    </div>
+
+    <div class="hud-bottom">
+      <span id="ctrl-mode" class="hud-chip subtle">🖱️ 鼠标</span>
+      <span id="current-chip" class="hud-chip current-chip hidden">
+        <span id="current-arrow">→</span>
+        <span id="current-label">平流</span>
+      </span>
+      <span class="hud-hint">ESC 暂停</span>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <!-- ================= 标题页 ================= -->
+  <div id="overlay" class="overlay">
+    <div class="screen menu-screen">
+      <header class="title-block">
+        <h1 class="game-title">鲲 · 逍遥游</h1>
+        <p class="game-sub">北冥有鱼，其名为鲲</p>
+      </header>
+      <div class="menu-actions title-actions">
+        <button id="btn-start" class="btn-primary">开 始 游 戏</button>
+        <button id="btn-levels" class="btn-ghost">关 卡 选 择</button>
+        <button id="btn-settings" class="btn-ghost">设 置</button>
+      </div>
+      <p class="tip">通关三幕，化而为鹏</p>
+      <span class="version-chip" id="ver-chip">v1.2</span>
+    </div>
+  </div>
+
+  <!-- ================= 选角色 ================= -->
+  <div id="charselect" class="overlay hidden">
+    <div class="screen menu-screen">
+      <header class="title-block compact">
+        <h2 class="screen-title">择 一 族 而 游</h2>
+      </header>
+      <div id="hero-list" class="hero-list"></div>
+      <p class="pick-label palette-label">择 一 色</p>
+      <div id="palette-row" class="palette-row"></div>
+      <div class="menu-actions">
+        <button id="btn-enter-game" class="btn-primary">入 北 冥</button>
+        <button id="btn-back-title" class="btn-ghost">返 回</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 关卡选择 ================= -->
+  <div id="levelselect" class="overlay hidden">
+    <div class="screen level-screen">
+      <h2 class="screen-title">关 卡 选 择</h2>
+      <div id="level-grid" class="level-grid"></div>
+      <button id="btn-levels-back" class="btn-ghost level-back">返 回</button>
+    </div>
+  </div>
+
+  <!-- ================= 暂停 ================= -->
+  <div id="pause" class="overlay hidden">
+    <div class="screen pause-screen">
+      <h2 class="screen-title">暂 停</h2>
+      <div class="pause-actions">
+        <button id="btn-resume" class="btn-primary">继续游戏</button>
+        <button id="btn-pause-settings" class="btn-ghost">设 置</button>
+        <button id="btn-pause-restart" class="btn-ghost">重开本关</button>
+        <button id="btn-pause-menu" class="btn-ghost danger">回到标题</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 设置 ================= -->
+  <div id="settings" class="overlay hidden">
+    <div class="screen settings-screen">
+      <h2 class="screen-title">设 置</h2>
+
+      <div class="setting-row">
+        <label>音量</label>
+        <input type="range" id="set-volume" min="0" max="100" value="70">
+        <span class="setting-val" id="set-volume-val">70</span>
+      </div>
+
+      <div class="setting-row">
+        <label>帧率上限</label>
+        <select id="set-fps">
+          <option value="0">不限（跟随屏幕）</option>
+          <option value="60">60 FPS</option>
+          <option value="120">120 FPS</option>
+          <option value="144">144 FPS</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label>屏幕震动</label>
+        <input type="checkbox" id="set-shake" checked>
+      </div>
+
+      <div class="setting-row">
+        <label>画面特效</label>
+        <select id="set-quality">
+          <option value="high">高（焦散 / 幽光 / 粒子）</option>
+          <option value="low">低（省电，关闭背景动效）</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label>操作提示</label>
+        <span class="setting-note">鼠标 / 方向键 / WASD 游动 · 空格冲刺 · M 静音</span>
+      </div>
+
+      <button id="btn-settings-close" class="btn-primary">返 回</button>
+    </div>
+  </div>
+
+  <!-- ================= 结算 ================= -->
+  <div id="gameover" class="overlay hidden">
+    <div class="screen result-screen">
+      <div class="result-icon">💀</div>
+      <h2 class="screen-title">葬 身 鱼 腹</h2>
+      <div class="result-stats">
+        <div class="result-main"><span id="final-score">0</span><em>最终得分</em></div>
+        <div class="result-sub" id="final-act">江河 1-1</div>
+        <div class="result-sub">吞鱼 <span id="final-eaten">0</span> 条</div>
+      </div>
+      <div class="pause-actions">
+        <button id="btn-restart" class="btn-primary">再战此关</button>
+        <button id="btn-menu" class="btn-ghost">回到标题</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 结局 ================= -->
+  <div id="ending" class="overlay hidden">
+    <div class="screen result-screen">
+      <div class="result-icon bird">🕊️</div>
+      <h2 class="screen-title">化 鹏</h2>
+      <p class="ending-verse">抟扶摇而上者九万里</p>
+      <div class="pause-actions">
+        <button id="btn-again" class="btn-primary">再入逍遥</button>
+        <button id="btn-home" class="btn-ghost">回到标题</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

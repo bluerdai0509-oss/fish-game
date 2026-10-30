@@ -1,0 +1,25 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#12384d">
+<canvas id="c" width="1300" height="720"></canvas>
+<script type="module">
+import * as J from './src/heroes/jiao.js';
+const ctx=document.getElementById('c').getContext('2d');
+ctx.fillStyle='#12384d';ctx.fillRect(0,0,1300,720);
+const pals=[
+ {body:'#f5a623',belly:'#ffe6a8',fin:'#b8600a',glow:'rgba(255,190,80,ALPHA)'},
+ {body:'#3fa7c4',belly:'#c6eef7',fin:'#14566f',glow:'rgba(110,210,240,ALPHA)'},
+ {body:'#d9e4dc',belly:'#ffffff',fin:'#7d968a',glow:'rgba(220,255,240,ALPHA)'},
+ {body:'#4a4170',belly:'#b8aede',fin:'#221d38',glow:'rgba(170,140,255,ALPHA)'},
+];
+function put(x,y,s,p,m,f,ang,pal){ctx.save();ctx.translate(x,y);ctx.rotate(ang||0);
+ J.draw(ctx,s,pal,{tailPhase:p,mouthOpen:m,formIndex:f},{len:1.55,wide:0.66,fin:1.2});ctx.restore();}
+// 四色，实际游戏尺寸 22
+pals.forEach((pal,i)=>{
+  put(160+i*300, 110, 22, 0.6+i, 0.9, i, 0, pal);
+  put(160+i*300, 240, 22, 2.1+i, 0, (i+2)%4, -0.5, pal);
+  put(160+i*300, 400, 30, 3.4+i, 0.7, i, 0.3, pal);
+});
+// 大图看细节
+put(400,600,64,1.0,0.9,4,0,pals[1]);
+put(950,600,64,2.4,0,0,0,pals[0]);
+window.__done=true;
+</script></body></html>

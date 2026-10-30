@@ -1,0 +1,13 @@
+{
+  "name": "fish-game",
+  "version": "1.0.0",
+  "description": "《鲲·逍遥游》— 俯视视角街机大鱼吃小鱼：三幕（江河→湖海→北冥），食气 Boss 战，化鹏结局",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node serve.js"
+  },
+  "private": true,
+  "dependencies": {
+    "pixi.js": "^8.22.0"
+  }
+}
